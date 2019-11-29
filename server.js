@@ -8,6 +8,7 @@ const { db, Users } = require('./db')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+
 // setting up nodemailer
 const nodemailer = require('nodemailer');
 
@@ -32,24 +33,106 @@ app.get('/', (req, res) => res.render('index'))
 
 app.post('/checkIn', function (req, res) {
 
-    var data = { 
-        "email": req.body.email,
-        "key": req.body.key
+    let myCurrentTime = fetchDateTimeInMyFormat();
+
+    const newUser = {
+        email: req.body.email,
+        key: req.body.key,
+        checkInTime: myCurrentTime,
+        checkOutTime: null,
+        checkedIn: true
     }
-    res.send(data)
+
+    Users.findOne({
+        where: {
+            email: req.body.email,
+            checkedIn: true
+        }
+    })
+        .then(function (record) {
+            if (record) {
+                console.log("User Already `Checked In` with the given email ID.");
+                // console.log(record)
+            }
+            else {
+                // record -> null
+                Users.create(newUser).then(user => {
+                    Console.log("User `Checked In`.")
+                    console.log(user)
+                    res.json(user)
+                })
+            }
+        })
+
 })
 
 
 app.post('/checkOut', function (req, res) {
-    var data = {
-        "email": req.body.email,
-        "key": req.body.key
-    }
-    res.send(data)
+
+    let myCurrentTime = fetchDateTimeInMyFormat();
+    Users.findOne({
+        where: {
+            email: req.body.email,
+            key: req.body.key,
+            checkedIn: true
+        }
+    })
+        .then(function (record) {
+            if (record) {
+                record.update({
+                    checkOutTime: myCurrentTime,
+                    checkedIn: false
+                })
+                    .then(() => {
+                        console.log("Succefully `Checked Out`!")
+                    })
+            }
+            else {
+                // record -> null
+                console.log(record)
+                console.log("No such `Checked In` User Found!")
+            }
+        })
+
+
 })
 
 db.sync().then(() => {
-app.listen(PORT, () => {
-    console.log(`Server started on http://localhost:${PORT}`)
+    app.listen(PORT, () => {
+        console.log(`Server started on http://localhost:${PORT}`)
+    })
 })
-})
+
+
+function fetchDateTimeInMyFormat() {
+    let date = new Date;
+    // date
+    let day = date.getDate()
+    if (day < 10) {
+        day = "0" + day;
+    }
+    let month = date.getMonth() + 1
+    if (month < 10) {
+        month = "0" + month;
+    }
+    let year = date.getFullYear()
+    let fullDate = day + "-" + month + "-" + year;
+    // time
+    let hours = date.getHours();
+    if (hours < 10) {
+        hours = "0" + hours;
+    }
+    let minutes = date.getMinutes();
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    let seconds = date.getSeconds();
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    let fullTime = hours + ":" + minutes + ":" + seconds;
+
+    let myDateTime = fullTime + "," + fullDate;
+    // console.log(myDateTime)
+    return myDateTime;
+}

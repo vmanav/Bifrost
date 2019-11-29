@@ -6,6 +6,11 @@ const db = new Sequelize({
 })
 
 const Users = db.define('user', {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   email: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -14,12 +19,12 @@ const Users = db.define('user', {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  chekInTime: {
-    type: Sequelize.DATE,
+  checkInTime: {
+    type: Sequelize.STRING,
     allowNull: false,
   },
-  chekOutTime: {
-    type: Sequelize.DATE,
+  checkOutTime: {
+    type: Sequelize.STRING,
   },
   checkedIn: {
     type: Sequelize.BOOLEAN,
