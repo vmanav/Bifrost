@@ -1,6 +1,6 @@
 // Setting Up HOST Details =>
-const hostName = "Vishesh Singh";
-const hostEmail = "zabhishek.verma@gmail.com";
+const hostName = "HostName";
+const hostEmail = "zmanav.1999@gmail.com";
 const hostPhone = "8851729421";
 const hostAddres = "houseNo., streetAddres, Society, City, State, Country";
 
@@ -43,6 +43,8 @@ app.post('/checkIn', function (req, res) {
     const newUser = {
         email: req.body.email,
         key: req.body.key,
+        name: req.body.name,
+        contactNo: req.body.contact,
         checkInTime: myCurrentTime,
         checkOutTime: null,
         checkedIn: true
@@ -70,6 +72,23 @@ app.post('/checkIn', function (req, res) {
                     // console.log(user)
                     // res.json(user)
                     console.log("User `Checked In`.")
+                    // Sending a mail to the Host when a user Checks In
+
+                    let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                    var mailOptions = {
+                        to: hostEmail,
+                        subject: 'Visitor Check-In Details.',
+                        text: mailText
+                    }
+                    smtpTransport.sendMail(mailOptions, function (err, res) {
+                        if (err) {
+                            console.log(err)
+                        }
+                        else {
+                            console.log('Email sent: ' + res.response);
+                        }
+                    })
+
                     res.render('redirect', {
                         success: true,
                         content: "User Checked In Successfully."
@@ -99,6 +118,29 @@ app.post('/checkOut', function (req, res) {
                     .then(() => {
                         console.log("Succefully `Checked Out`!")
 
+                        console.log(record)
+                        console.log(record.checkOutTime)
+
+                        // Sending a mail to the user for CheckOut about the details of the visit.
+                        console.log("mail yaha bheni hai ->", record.email)
+
+                        let recipient = record.email;
+                        let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${hostName}.`;
+                        var mailOptionsCheckOut = {
+                            to: recipient,
+                            subject: 'Thank You for yout visit.',
+                            text: mailText
+                        }
+                        smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
+                            if (err) {
+                                console.log(err)
+                            }
+                            else {
+                                console.log('Email sent: ' + res.response);
+                            }
+                        })
+
+
                         res.render('redirect', {
                             success: true,
                             content: "User Checked Out Successfully!"
@@ -109,12 +151,12 @@ app.post('/checkOut', function (req, res) {
                 // record -> null
                 // console.log(record)
                 console.log("No such `Checked In` User Found!")
-                
+
                 res.render('redirect', {
                     failure: true,
                     content: "OOPS! No such Checked In User Found."
                 })
-            
+
             }
         })
 })
