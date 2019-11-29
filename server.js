@@ -1,4 +1,10 @@
-// READ here -  http://www.passportjs.org
+// Setting Up HOST Details =>
+const hostName = "Vishesh Singh";
+const hostEmail = "zabhishek.verma@gmail.com";
+const hostPhone = "8851729421";
+const hostAddres = "houseNo., streetAddres, Society, City, State, Country";
+
+
 const PORT = 3000;
 
 const express = require('express')
@@ -7,7 +13,6 @@ const { db, Users } = require('./db')
 // setting up bcrypt
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-
 
 // setting up nodemailer
 const nodemailer = require('nodemailer');
@@ -51,19 +56,27 @@ app.post('/checkIn', function (req, res) {
     })
         .then(function (record) {
             if (record) {
-                console.log("User Already `Checked In` with the given email ID.");
                 // console.log(record)
+
+                console.log("User Already `Checked In` with the given email ID.");
+                res.render('redirect', {
+                    failure: true,
+                    content: "OOPS! User Already Checked In with the given email ID."
+                })
             }
             else {
                 // record -> null
                 Users.create(newUser).then(user => {
-                    Console.log("User `Checked In`.")
-                    console.log(user)
-                    res.json(user)
+                    // console.log(user)
+                    // res.json(user)
+                    console.log("User `Checked In`.")
+                    res.render('redirect', {
+                        success: true,
+                        content: "User Checked In Successfully."
+                    })
                 })
             }
         })
-
 })
 
 
@@ -85,16 +98,25 @@ app.post('/checkOut', function (req, res) {
                 })
                     .then(() => {
                         console.log("Succefully `Checked Out`!")
+
+                        res.render('redirect', {
+                            success: true,
+                            content: "User Checked Out Successfully!"
+                        })
                     })
             }
             else {
                 // record -> null
-                console.log(record)
+                // console.log(record)
                 console.log("No such `Checked In` User Found!")
+                
+                res.render('redirect', {
+                    failure: true,
+                    content: "OOPS! No such Checked In User Found."
+                })
+            
             }
         })
-
-
 })
 
 db.sync().then(() => {
@@ -102,7 +124,6 @@ db.sync().then(() => {
         console.log(`Server started on http://localhost:${PORT}`)
     })
 })
-
 
 function fetchDateTimeInMyFormat() {
     let date = new Date;
