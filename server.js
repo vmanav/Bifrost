@@ -1,10 +1,3 @@
-// Setting Up HOST Details =>
-const hostName = "HostName";
-const hostEmail = "zmanav.1999@gmail.com";
-const hostPhone = "8851729421";
-const hostAddres = "houseNo., streetAddres, Society, City, State, Country";
-
-
 const PORT = 3000;
 
 const express = require('express')
@@ -42,6 +35,7 @@ app.get('/host', (req, res) => res.render('host'))
 
 app.get('/visitor', (req, res) => res.render('visitor'))
 
+// Visitor Check-Out
 app.post('/checkIn', function (req, res) {
 
     let myCurrentTime = fetchDateTimeInMyFormat();
@@ -75,37 +69,62 @@ app.post('/checkIn', function (req, res) {
             }
             else {
                 // record -> null
+
+                // Create a new user
                 Users.create(newUser).then(user => {
                     // console.log(user)
                     // res.json(user)
                     console.log("User `Checked In`.")
 
 
-                    // Select which HOST to mail 
+                    // Find which HOST to mail 
+                    let hostName = user.hostName;
+                    Hosts.findOne({
+                        where: {
+                            name: hostName
+                        }
+                    }).then(function (record) {
+                        if (record) {
+                            // record exits
+                            console.log("host Exists .")
+                            let hostEmail = record.email;
+                            console.log("hostEmail", hostEmail)
 
 
-                    // Get that hosts email id from databasse
+                            // Sending a mail to the Host when a user Checks In
+
+                            let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                            var mailOptions = {
+                                to: hostEmail,
+                                subject: 'Visitor Check-In Details.',
+                                text: mailText
+                            }
+                            smtpTransport.sendMail(mailOptions, function (err, res) {
+                                if (err) {
+                                    console.log(err)
+                                }
+                                else {
+                                    console.log('Email sent: ' + res.response);
+                                }
+                            })
 
 
+                            res.render('redirect', {
+                                success: true,
+                                content: "User Checked In Successfully."
+                            })
 
+                        }
+                        else {
+                            // No Host Found
 
-                    // Sending a mail to the Host when a user Checks In
-
-                    // let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
-                    // var mailOptions = {
-                    //     to: hostEmail,
-                    //     subject: 'Visitor Check-In Details.',
-                    //     text: mailText
-                    // }
-                    // smtpTransport.sendMail(mailOptions, function (err, res) {
-                    //     if (err) {
-                    //         console.log(err)
-                    //     }
-                    //     else {
-                    //         console.log('Email sent: ' + res.response);
-                    //     }
-                    // })
-
+                            console.log("No Such Host Found.");
+                            res.render('redirect', {
+                                failure: true,
+                                content: "OOPS! No Such Host Found."
+                            })
+                        }
+                    })
 
 
 
@@ -135,16 +154,14 @@ app.post('/checkIn', function (req, res) {
                     //     }
                     // });
 
-                    res.render('redirect', {
-                        success: true,
-                        content: "User Checked In Successfully."
-                    })
+
                 })
             }
         })
 })
 
 
+// Visitor Check-Out
 app.post('/checkOut', function (req, res) {
 
     let myCurrentTime = fetchDateTimeInMyFormat();
@@ -164,10 +181,13 @@ app.post('/checkOut', function (req, res) {
                     .then(() => {
                         console.log("Succefully `Checked Out`!")
 
+                        // Getting Details of The Host 
+                        checkOutHostName = record.hostName;
+
                         // Sending a mail to the user for CheckOut about the details of the visit.
                         let recipient = record.email;
 
-                        let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${hostName}.`;
+                        let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${checkOutHostName}.`;
                         var mailOptionsCheckOut = {
                             to: recipient,
                             subject: 'Thank You for your visit.',
@@ -202,20 +222,21 @@ app.post('/checkOut', function (req, res) {
         })
 })
 
-
-app.post('/hostReg', (eq, res) => {
+// Host Registration
+app.post('/hostReg', (req, res) => {
 
     const newHost = {
-        name: req.body.h_name,
-        contactNo: req.body.h_contact,
-        address: req.body.h_addres,
-        email: req.body.h_email,
-        key: req.body.h_key,
+        name: req.body.hostName,
+        contactNo: req.body.hostContact,
+        address: req.body.hostAddress,
+        email: req.body.hostEmail,
+        key: req.body.hostKey,
     }
+    // console.log(newHost)
 
     Hosts.findOne({
         where: {
-            email: req.body.h_email,
+            email: req.body.hostEmail,
         }
     })
         .then(function (record) {
@@ -230,6 +251,7 @@ app.post('/hostReg', (eq, res) => {
             }
             else {
                 // record -> null
+
                 Hosts.create(newHost).then(host => {
                     // console.log(user)
                     // res.json(user)
@@ -245,12 +267,57 @@ app.post('/hostReg', (eq, res) => {
 
 })
 
+
+// Host DeRegistration
+app.post('/hostDereg', (req, res) => {
+
+    Hosts.findOne({
+        where: {
+            name: req.body.hostName,
+            contactNo: req.body.hostContact,
+            address: req.body.hostAddress,
+            email: req.body.hostEmail,
+            key: req.body.hostKey,
+        }
+    })
+        .then(function (record) {
+            if (record) {
+                // console.log(record)
+
+                record.destroy().then(() => {
+                    console.log("Host Deregistered Successfully.")
+
+                    res.render('redirect', {
+                        success: true,
+                        content: "Host Deregistered Successfully."
+                    })
+
+                })
+
+            }
+            else {
+                // record -> null
+
+                console.log("No Such Host Record Exist to De-Register.");
+                res.render('redirect', {
+                    failure: true,
+                    content: "OOPS! No Such Host Record Exist to De-Register."
+                })
+            }
+        })
+})
+
+
 db.sync().then(() => {
     app.listen(PORT, () => {
         console.log(`Server started on http://localhost:${PORT}`)
+        console.log(`Host Page on http://localhost:${PORT}/host`)
+        console.log(`Visitor Page on http://localhost:${PORT}/visitor`)
     })
 })
 
+
+// Function to return DateTime in my format
 function fetchDateTimeInMyFormat() {
     let date = new Date;
     // date
