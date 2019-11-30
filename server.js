@@ -16,7 +16,7 @@ const saltRounds = 10;
 
 // setting up nodemailer
 const nodemailer = require('nodemailer');
-
+// Details of account seding mails
 var smtpTransport = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -118,17 +118,13 @@ app.post('/checkOut', function (req, res) {
                     .then(() => {
                         console.log("Succefully `Checked Out`!")
 
-                        console.log(record)
-                        console.log(record.checkOutTime)
-
                         // Sending a mail to the user for CheckOut about the details of the visit.
-                        console.log("mail yaha bheni hai ->", record.email)
-
                         let recipient = record.email;
+
                         let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${hostName}.`;
                         var mailOptionsCheckOut = {
                             to: recipient,
-                            subject: 'Thank You for yout visit.',
+                            subject: 'Thank You for your visit.',
                             text: mailText
                         }
                         smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
@@ -139,7 +135,6 @@ app.post('/checkOut', function (req, res) {
                                 console.log('Email sent: ' + res.response);
                             }
                         })
-
 
                         res.render('redirect', {
                             success: true,
