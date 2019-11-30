@@ -26,6 +26,13 @@ var smtpTransport = nodemailer.createTransport({
     }
 });
 
+// // Setting up Twilio
+// const accountSid = 'AC1245dfc2e614d557a25afba8ab0f3536';
+// const authToken = '4c89ab458930b5d8e1e98ac41334f727';
+// var client = require('twilio')(accountSid, authToken);
+
+
+
 const app = express()
 
 app.set('view engine', 'hbs')
@@ -72,22 +79,61 @@ app.post('/checkIn', function (req, res) {
                     // console.log(user)
                     // res.json(user)
                     console.log("User `Checked In`.")
-                    // Sending a mail to the Host when a user Checks In
 
-                    let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
-                    var mailOptions = {
-                        to: hostEmail,
-                        subject: 'Visitor Check-In Details.',
-                        text: mailText
-                    }
-                    smtpTransport.sendMail(mailOptions, function (err, res) {
+                    // // Sending a mail to the Host when a user Checks In
+
+                    // let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                    // var mailOptions = {
+                    //     to: hostEmail,
+                    //     subject: 'Visitor Check-In Details.',
+                    //     text: mailText
+                    // }
+                    // smtpTransport.sendMail(mailOptions, function (err, res) {
+                    //     if (err) {
+                    //         console.log(err)
+                    //     }
+                    //     else {
+                    //         console.log('Email sent: ' + res.response);
+                    //     }
+                    // })
+
+                    // Sending a sms to the Host when a user Checks In via TWILIO
+                    let smsText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                    // client.messages
+                    //     .create({
+                    //         to: '+919999016138',
+                    //         from: '+918851729421',
+                    //         body: smsText
+                    //     })
+                    //     .then((message) => {
+                    //         console.log("SMS sent.")
+                    //         console.log(message.sid)
+                    //     });
+
+                    // Sending a sms to the Host when a user Checks In via NEXMO
+                    const Nexmo = require('nexmo');
+
+                    const nexmo = new Nexmo({
+                        apiKey: '9217d0cd',
+                        apiSecret: 'QYFh3ja05drpYSTS',
+                    });
+
+                    const from = 'Nexmo';
+                    const to = '918851729421';
+                    const text = smsText;
+
+                    nexmo.message.sendSms(from, to, text, (err, responseData) => {
                         if (err) {
-                            console.log(err)
+                            console.log(err);
+                        } else {
+                            if (responseData.messages[0]['status'] === "0") {
+                                console.log("Message sent successfully.");
+                            } else {
+                                console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+                            }
                         }
-                        else {
-                            console.log('Email sent: ' + res.response);
-                        }
-                    })
+                    });
+
 
                     res.render('redirect', {
                         success: true,
@@ -118,23 +164,24 @@ app.post('/checkOut', function (req, res) {
                     .then(() => {
                         console.log("Succefully `Checked Out`!")
 
-                        // Sending a mail to the user for CheckOut about the details of the visit.
-                        let recipient = record.email;
+                        // // Sending a mail to the user for CheckOut about the details of the visit.
+                        // let recipient = record.email;
 
-                        let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${hostName}.`;
-                        var mailOptionsCheckOut = {
-                            to: recipient,
-                            subject: 'Thank You for your visit.',
-                            text: mailText
-                        }
-                        smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
-                            if (err) {
-                                console.log(err)
-                            }
-                            else {
-                                console.log('Email sent: ' + res.response);
-                            }
-                        })
+                        // let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${hostName}.`;
+                        // var mailOptionsCheckOut = {
+                        //     to: recipient,
+                        //     subject: 'Thank You for your visit.',
+                        //     text: mailText
+                        // }
+                        // smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
+                        //     if (err) {
+                        //         console.log(err)
+                        //     }
+                        //     else {
+                        //         console.log('Email sent: ' + res.response);
+                        //     }
+                        // })
+
 
                         res.render('redirect', {
                             success: true,
