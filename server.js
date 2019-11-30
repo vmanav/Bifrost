@@ -291,7 +291,6 @@ app.post('/hostDereg', (req, res) => {
                         success: true,
                         content: "Host Deregistered Successfully."
                     })
-
                 })
 
             }
