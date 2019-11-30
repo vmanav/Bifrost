@@ -27,6 +27,10 @@ const Users = db.define('user', {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  hostName: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   checkInTime: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -40,6 +44,36 @@ const Users = db.define('user', {
   }
 })
 
+
+const Hosts = db.define('host', {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  email: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  key: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  contactNo: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  address: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  }
+})
+
 module.exports = {
-  db, Users
+  db, Users, Hosts
 }

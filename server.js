@@ -8,7 +8,9 @@ const hostAddres = "houseNo., streetAddres, Society, City, State, Country";
 const PORT = 3000;
 
 const express = require('express')
-const { db, Users } = require('./db')
+
+// Importing Sequelize models 
+const { db, Users, Hosts } = require('./db')
 
 // setting up bcrypt
 const bcrypt = require('bcrypt');
@@ -49,6 +51,7 @@ app.post('/checkIn', function (req, res) {
         key: req.body.key,
         name: req.body.name,
         contactNo: req.body.contact,
+        hostName: req.body.hostName,
         checkInTime: myCurrentTime,
         checkOutTime: null,
         checkedIn: true
@@ -77,22 +80,32 @@ app.post('/checkIn', function (req, res) {
                     // res.json(user)
                     console.log("User `Checked In`.")
 
+
+                    // Select which HOST to mail 
+
+
+                    // Get that hosts email id from databasse
+
+
+
+
                     // Sending a mail to the Host when a user Checks In
 
-                    let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
-                    var mailOptions = {
-                        to: hostEmail,
-                        subject: 'Visitor Check-In Details.',
-                        text: mailText
-                    }
-                    smtpTransport.sendMail(mailOptions, function (err, res) {
-                        if (err) {
-                            console.log(err)
-                        }
-                        else {
-                            console.log('Email sent: ' + res.response);
-                        }
-                    })
+                    // let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                    // var mailOptions = {
+                    //     to: hostEmail,
+                    //     subject: 'Visitor Check-In Details.',
+                    //     text: mailText
+                    // }
+                    // smtpTransport.sendMail(mailOptions, function (err, res) {
+                    //     if (err) {
+                    //         console.log(err)
+                    //     }
+                    //     else {
+                    //         console.log('Email sent: ' + res.response);
+                    //     }
+                    // })
+
 
 
 
@@ -187,6 +200,49 @@ app.post('/checkOut', function (req, res) {
 
             }
         })
+})
+
+
+app.post('/hostReg', (eq, res) => {
+
+    const newHost = {
+        name: req.body.h_name,
+        contactNo: req.body.h_contact,
+        address: req.body.h_addres,
+        email: req.body.h_email,
+        key: req.body.h_key,
+    }
+
+    Hosts.findOne({
+        where: {
+            email: req.body.h_email,
+        }
+    })
+        .then(function (record) {
+            if (record) {
+                // console.log(record)
+
+                console.log("Host Already `Exist` with the given email ID.");
+                res.render('redirect', {
+                    failure: true,
+                    content: "OOPS! A Host Already exist with the given email ID."
+                })
+            }
+            else {
+                // record -> null
+                Hosts.create(newHost).then(host => {
+                    // console.log(user)
+                    // res.json(user)
+                    console.log("Host Registered.")
+
+                    res.render('redirect', {
+                        success: true,
+                        content: "Host Registered Successfully."
+                    })
+                })
+            }
+        })
+
 })
 
 db.sync().then(() => {

@@ -27,6 +27,7 @@
     <style>
         body {
             background-color: #1E1E1E;
+            color: aliceblue;
         }
 
         .main {
@@ -37,19 +38,25 @@
 
 <body>
 
-    <div class="container main">
+    <div class="container main d-flex flex-column justify-content-center">
 
-        {{!-- <div class="logo"></div> --}}
-        <h3 style="text-align: center;">Bifrost</h3>
-        <hr style="border: 1px solid yellow;">
-        <h5 style="text-align: center;">Connecting Clients and Hosts conveniently.</h5>
+        <i class="text-center far fa-snowflake mb-4" style="font-size: 4rem;"></i>
 
-        <a href="/host">
-            <button type="button" class="btn btn-outline-light">Host a Meeting.</button>
-        </a>
-        <a href="/visitor">
-            <button type="button" class="btn btn-outline-light">Attend a Meeting</button>
-        </a>
+        <h3 class=" text-center" style="letter-spacing: 0.2rem;">Bifröst</h3>
+        <div>
+            <hr style="border-top: 2px solid yellow; width: 20vw;">
+        </div>
+        <p style="text-align: center;font-size: 0.9rem">Connecting Clients and Hosts conveniently.</p>
+
+        <div class="d-flex justify-content-center">
+            <a href="/host" class="m-3">
+                <button type="button" class="btn btn-outline-light">Host a Meeting</button>
+            </a>
+            <a href="/visitor" class="m-3">
+                <button type="button" class="btn btn-outline-info">Attend a Meeting</button>
+            </a>
+        </div>
+
     </div>
 </body>
 
