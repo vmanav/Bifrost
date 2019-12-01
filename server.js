@@ -1,9 +1,13 @@
 const PORT = 3000;
 
+// Configuring dotenv file
+const dotenv = require('dotenv')
+dotenv.config();
+
 const express = require('express')
 
 // Importing Sequelize models 
-const { db, Users, Hosts } = require('./db')
+const { db, Users, Hosts } = require('./models/db')
 
 // setting up bcrypt
 const bcrypt = require('bcrypt');
@@ -16,8 +20,8 @@ var smtpTransport = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-        user: "zmanav.28@gmail.com",
-        pass: "#manavmanu2017verma"
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASS
     }
 });
 
@@ -40,17 +44,6 @@ app.post('/checkIn', function (req, res) {
 
     let myCurrentTime = fetchDateTimeInMyFormat();
 
-    const newUser = {
-        email: req.body.email,
-        key: req.body.key,
-        name: req.body.name,
-        contactNo: req.body.contact,
-        hostName: req.body.hostName,
-        checkInTime: myCurrentTime,
-        checkOutTime: null,
-        checkedIn: true
-    }
-
     Users.findOne({
         where: {
             email: req.body.email,
@@ -70,92 +63,112 @@ app.post('/checkIn', function (req, res) {
             else {
                 // record -> null
 
-                // Create a new user
-                Users.create(newUser).then(user => {
-                    // console.log(user)
-                    // res.json(user)
-                    console.log("User `Checked In`.")
+                bcrypt.hash(req.body.key, saltRounds, function (err, hash) {
+                    // Store hash in your password DB.
+
+                    const newUser = {
+                        email: req.body.email,
+                        key: hash,
+                        name: req.body.name,
+                        contactNo: req.body.contact,
+                        hostName: req.body.hostName,
+                        checkInTime: myCurrentTime,
+                        checkOutTime: null,
+                        checkedIn: true
+                    }
+
+                    // Create a new user
+                    Users.create(newUser).then(user => {
+                        // console.log(user)
+                        // res.json(user)
+                        console.log("User `Checked In`.")
 
 
-                    // Find which HOST to mail 
-                    let hostName = user.hostName;
-                    Hosts.findOne({
-                        where: {
-                            name: hostName
-                        }
-                    }).then(function (record) {
-                        if (record) {
-                            // record exits
-                            console.log("host Exists .")
-                            let hostEmail = record.email;
-                            console.log("hostEmail", hostEmail)
-
-
-                            // Sending a mail to the Host when a user Checks In
-
-                            let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
-                            var mailOptions = {
-                                to: hostEmail,
-                                subject: 'Visitor Check-In Details.',
-                                text: mailText
+                        // Find which HOST to mail 
+                        let hostName = user.hostName;
+                        Hosts.findOne({
+                            where: {
+                                name: hostName
                             }
-                            smtpTransport.sendMail(mailOptions, function (err, res) {
-                                if (err) {
-                                    console.log(err)
+                        }).then(function (record) {
+                            if (record) {
+                                // record exits
+                                console.log("host Exists .")
+                                let hostEmail = record.email;
+                                console.log("hostEmail =>", hostEmail)
+
+                                let hostContactNo = record.contactNo;
+                                console.log("hostContactNo =>", hostContactNo)
+
+
+                                // Sending a MAIL to the Host when a user Checks In
+
+                                let mailText = `Name - ${user.name},\nContact Number - ${user.contactNo},\nEmail Address - ${user.email},\nChecked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
+                                var mailOptions = {
+                                    to: hostEmail,
+                                    subject: 'Visitor Check-In Details.',
+                                    text: mailText
                                 }
-                                else {
-                                    console.log('Email sent: ' + res.response);
-                                }
-                            })
+                                smtpTransport.sendMail(mailOptions, function (err, res) {
+                                    if (err) {
+                                        console.log(err)
+                                    }
+                                    else {
+                                        console.log('Email sent: ' + res.response);
+                                    }
+                                })
 
 
-                            res.render('redirect', {
-                                success: true,
-                                content: "User Checked In Successfully."
-                            })
+                                // // Sending a SMS to the Host when a user Checks In via NEXMO
+                                // const Nexmo = require('nexmo');
 
-                        }
-                        else {
-                            // No Host Found
+                                // const nexmo = new Nexmo({
+                                //     apiKey: process.env.NEXMO_API_KEY,
+                                //     apiSecret: process.env.NEXMO_API_SECRET,
+                                // });
 
-                            console.log("No Such Host Found.");
-                            res.render('redirect', {
-                                failure: true,
-                                content: "OOPS! No Such Host Found."
-                            })
-                        }
+                                // let smsText = `Visitor Check-In Details:\n` + mailText;
+
+                                // const from = 'Nexmo';
+                                // const to = '+91' + hostContactNo;
+                                // const text = smsText;
+
+                                // nexmo.message.sendSms(from, to, text, (err, responseData) => {
+                                //     if (err) {
+                                //         console.log(err);
+                                //     } else {
+                                //         if (responseData.messages[0]['status'] === "0") {
+                                //             console.log("SMS sent successfully.");
+                                //         } else {
+                                //             console.log(`SMS failed with error: ${responseData.messages[0]['error-text']}`);
+                                //         }
+                                //     }
+                                // });
+
+
+
+                                // success Redirect
+                                res.render('redirect', {
+                                    success: true,
+                                    content: "User Checked In Successfully."
+                                })
+
+                            }
+                            else {
+                                // No Host Found
+
+                                console.log("No Such Host Found.");
+                                res.render('redirect', {
+                                    failure: true,
+                                    content: "OOPS! No Such Host Found."
+                                })
+                            }
+                        })
+
                     })
 
+                });
 
-
-                    // // Sending a sms to the Host when a user Checks In via NEXMO
-                    // const Nexmo = require('nexmo');
-
-                    // const nexmo = new Nexmo({
-                    //     apiKey: '9217d0cd',
-                    //     apiSecret: 'QYFh3ja05drpYSTS',
-                    // });
-
-                    // let smsText = `Visitor Check-In Details:\n` + mailText;
-
-                    // const from = 'Nexmo';
-                    // const to = '918851729421';
-                    // const text = smsText;
-
-                    // nexmo.message.sendSms(from, to, text, (err, responseData) => {
-                    //     if (err) {
-                    //         console.log(err);
-                    //     } else {
-                    //         if (responseData.messages[0]['status'] === "0") {
-                    //             console.log("SMS sent successfully.");
-                    //         } else {
-                    //             console.log(`SMS failed with error: ${responseData.messages[0]['error-text']}`);
-                    //         }
-                    //     }
-                    // });
-
-
-                })
             }
         })
 })
@@ -168,47 +181,12 @@ app.post('/checkOut', function (req, res) {
     Users.findOne({
         where: {
             email: req.body.email,
-            key: req.body.key,
+            // key: req.body.key,
             checkedIn: true
         }
     })
         .then(function (record) {
-            if (record) {
-                record.update({
-                    checkOutTime: myCurrentTime,
-                    checkedIn: false
-                })
-                    .then(() => {
-                        console.log("Succefully `Checked Out`!")
-
-                        // Getting Details of The Host 
-                        checkOutHostName = record.hostName;
-
-                        // Sending a mail to the user for CheckOut about the details of the visit.
-                        let recipient = record.email;
-
-                        let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${checkOutHostName}.`;
-                        var mailOptionsCheckOut = {
-                            to: recipient,
-                            subject: 'Thank You for your visit.',
-                            text: mailText
-                        }
-                        smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
-                            if (err) {
-                                console.log(err)
-                            }
-                            else {
-                                console.log('Email sent: ' + res.response);
-                            }
-                        })
-
-                        res.render('redirect', {
-                            success: true,
-                            content: "User Checked Out Successfully!"
-                        })
-                    })
-            }
-            else {
+            if (!record) {
                 // record -> null
                 // console.log(record)
                 console.log("No such `Checked In` User Found!")
@@ -217,6 +195,73 @@ app.post('/checkOut', function (req, res) {
                     failure: true,
                     content: "OOPS! No such Checked In User Found."
                 })
+
+            }
+            else {
+
+                // var keysMatched;
+
+                // check key matches or not 
+                let hashCheck = record.key;
+
+                bcrypt.compare(req.body.key, hashCheck, function (err, response) {
+                    if (response == true) {
+                        // Keys match
+
+                        record.update({
+                            checkOutTime: myCurrentTime,
+                            checkedIn: false
+                        })
+                            .then(() => {
+                                console.log("Succefully `Checked Out`!")
+
+                                var keysMatched = true;
+
+                                // console.log("Key entered Match.")
+                                // Getting Details of The Host 
+                                checkOutHostName = record.hostName;
+
+                                // Sending a mail to the user for CheckOut about the details of the visit.
+                                let recipient = record.email;
+
+                                let mailText = `Your visit details are given below: \nName - ${record.name},\nContact Number - ${record.contactNo},\nEmail Address - ${record.email},\nChecked-In at ${record.checkInTime.split(",")[0]} on ${record.checkInTime.split(",")[1]}\nChecked-Out at ${record.checkOutTime.split(",")[0]} on ${record.checkOutTime.split(",")[1]}\nHost visited - ${checkOutHostName}.`;
+                                var mailOptionsCheckOut = {
+                                    to: recipient,
+                                    subject: 'Thank You for your visit.',
+                                    text: mailText
+                                }
+                                smtpTransport.sendMail(mailOptionsCheckOut, function (err, res) {
+                                    if (err) {
+                                        console.log(err)
+                                    }
+                                    else {
+                                        console.log('Email sent: ' + res.response);
+                                    }
+                                })
+
+
+                                res.render('redirect', {
+                                    success: true,
+                                    content: "User Checked Out Successfully!"
+                                })
+
+                            })
+
+                    }
+                    else {
+                        // Keys don't match
+
+                        keysMatched = false;
+                        console.log("Key entered does not match")
+
+                        res.render('redirect', {
+                            failure: true,
+                            content: "OOPS! Key entered does not match."
+                        })
+                    }
+
+                });
+
 
             }
         })
@@ -310,8 +355,8 @@ app.post('/hostDereg', (req, res) => {
 db.sync().then(() => {
     app.listen(PORT, () => {
         console.log(`Server started on http://localhost:${PORT}`)
-        console.log(`Host Page on http://localhost:${PORT}/host`)
-        console.log(`Visitor Page on http://localhost:${PORT}/visitor`)
+        // console.log(`Host Page on http://localhost:${PORT}/host`)
+        // console.log(`Visitor Page on http://localhost:${PORT}/visitor`)
     })
 })
 

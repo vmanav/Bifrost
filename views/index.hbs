@@ -33,6 +33,17 @@
         .main {
             height: 100vh;
         }
+
+        #my_logo {
+            color: transparent;
+            background: radial-gradient(circle at 5% 107%, #fffbd1 0%, #1A535C 44.5%, #4ECDC4 46.5%, #F7FFF7 47%, #FF6B6B 48.5%, #FFE66D 51%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /*
+            background: -webkit-radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        */
     </style>
 </head>
 
@@ -40,21 +51,30 @@
 
     <div class="container main d-flex flex-column justify-content-center">
 
-        <i class="text-center far fa-snowflake mb-4" style="font-size: 4rem;"></i>
+        <i id="my_logo" class="text-center far fa-snowflake m-2" style="font-size: 4rem;"></i>
 
         <h3 class=" text-center" style="letter-spacing: 0.2rem;">Bifröst</h3>
         <div>
             <hr style="border-top: 2px solid yellow; width: 20vw;">
         </div>
-        <p style="text-align: center;font-size: 0.9rem">Connecting Clients and Hosts conveniently.</p>
+        <p style="text-align: center;font-size: 0.9rem">Connecting <i>Clients</i> and <i>Hosts</i> conveniently.</p>
 
-        <div class="d-flex justify-content-center">
-            <a href="/host" class="m-3">
-                <button type="button" class="btn btn-outline-light">Host Portal</button>
-            </a>
-            <a href="/visitor" class="m-3">
-                <button type="button" class="btn btn-outline-info">Visitor Portal</button>
-            </a>
+        <div class="d-flex justify-content-center mt-5">
+
+            <div class="d-flex flex-column">
+                <small class="text-center">Host a Meeting ?</small>
+                <a href="/host" class="m-3">
+                    <button type="button" class="btn btn-outline-light">Host Portal</button>
+                </a>
+            </div>
+
+            <div class="d-flex flex-column">
+                <small class="text-center">Attend a Meeting ?</small>
+                <a href="/visitor" class="m-3">
+                    <button type="button" class="btn btn-outline-info">Visitor Portal</button>
+                </a>
+            </div>
+
         </div>
 
     </div>
