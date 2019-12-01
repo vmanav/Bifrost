@@ -119,32 +119,31 @@ app.post('/checkIn', function (req, res) {
                                 })
 
 
-                                // // Sending a SMS to the Host when a user Checks In via NEXMO
-                                // const Nexmo = require('nexmo');
+                                // Sending a SMS to the Host when a user Checks In via NEXMO
+                                const Nexmo = require('nexmo');
 
-                                // const nexmo = new Nexmo({
-                                //     apiKey: process.env.NEXMO_API_KEY,
-                                //     apiSecret: process.env.NEXMO_API_SECRET,
-                                // });
+                                const nexmo = new Nexmo({
+                                    apiKey: process.env.NEXMO_API_KEY,
+                                    apiSecret: process.env.NEXMO_API_SECRET,
+                                });
 
-                                // let smsText = `Visitor Check-In Details:\n` + mailText;
+                                let smsText = `Visitor Check-In Details:\n` + mailText;
 
-                                // const from = 'Nexmo';
-                                // const to = '+91' + hostContactNo;
-                                // const text = smsText;
+                                const from = 'Nexmo';
+                                const to = '+91' + hostContactNo;
+                                const text = smsText;
 
-                                // nexmo.message.sendSms(from, to, text, (err, responseData) => {
-                                //     if (err) {
-                                //         console.log(err);
-                                //     } else {
-                                //         if (responseData.messages[0]['status'] === "0") {
-                                //             console.log("SMS sent successfully.");
-                                //         } else {
-                                //             console.log(`SMS failed with error: ${responseData.messages[0]['error-text']}`);
-                                //         }
-                                //     }
-                                // });
-
+                                nexmo.message.sendSms(from, to, text, (err, responseData) => {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        if (responseData.messages[0]['status'] === "0") {
+                                            console.log("SMS sent successfully.");
+                                        } else {
+                                            console.log(`SMS failed with error: ${responseData.messages[0]['error-text']}`);
+                                        }
+                                    }
+                                });
 
 
                                 // success Redirect
@@ -199,8 +198,6 @@ app.post('/checkOut', function (req, res) {
             }
             else {
 
-                // var keysMatched;
-
                 // check key matches or not 
                 let hashCheck = record.key;
 
@@ -214,8 +211,6 @@ app.post('/checkOut', function (req, res) {
                         })
                             .then(() => {
                                 console.log("Succefully `Checked Out`!")
-
-                                var keysMatched = true;
 
                                 // console.log("Key entered Match.")
                                 // Getting Details of The Host 
@@ -251,7 +246,6 @@ app.post('/checkOut', function (req, res) {
                     else {
                         // Keys don't match
 
-                        keysMatched = false;
                         console.log("Key entered does not match")
 
                         res.render('redirect', {
@@ -270,13 +264,6 @@ app.post('/checkOut', function (req, res) {
 // Host Registration
 app.post('/hostReg', (req, res) => {
 
-    const newHost = {
-        name: req.body.hostName,
-        contactNo: req.body.hostContact,
-        address: req.body.hostAddress,
-        email: req.body.hostEmail,
-        key: req.body.hostKey,
-    }
     // console.log(newHost)
 
     Hosts.findOne({
@@ -297,16 +284,31 @@ app.post('/hostReg', (req, res) => {
             else {
                 // record -> null
 
-                Hosts.create(newHost).then(host => {
-                    // console.log(user)
-                    // res.json(user)
-                    console.log("Host Registered.")
+                bcrypt.hash(req.body.hostKey, saltRounds, function (err, hashForHost) {
+                    // Store hash in your password DB.
 
-                    res.render('redirect', {
-                        success: true,
-                        content: "Host Registered Successfully."
+                    const newHost = {
+                        name: req.body.hostName,
+                        contactNo: req.body.hostContact,
+                        address: req.body.hostAddress,
+                        email: req.body.hostEmail,
+                        key: hashForHost,
+                    }
+                    console.log("newHost ->", newHost)
+
+                    Hosts.create(newHost).then(host => {
+                        // console.log(host)
+                        // res.json(host)
+                        console.log("Host Registered.")
+
+                        res.render('redirect', {
+                            success: true,
+                            content: "Host Registered Successfully."
+                        })
                     })
-                })
+
+                });
+
             }
         })
 
@@ -322,24 +324,12 @@ app.post('/hostDereg', (req, res) => {
             contactNo: req.body.hostContact,
             address: req.body.hostAddress,
             email: req.body.hostEmail,
-            key: req.body.hostKey,
+            // key: req.body.hostKey,
         }
     })
         .then(function (record) {
-            if (record) {
-                // console.log(record)
 
-                record.destroy().then(() => {
-                    console.log("Host Deregistered Successfully.")
-
-                    res.render('redirect', {
-                        success: true,
-                        content: "Host Deregistered Successfully."
-                    })
-                })
-
-            }
-            else {
+            if (!record) {
                 // record -> null
 
                 console.log("No Such Host Record Exist to De-Register.");
@@ -347,6 +337,42 @@ app.post('/hostDereg', (req, res) => {
                     failure: true,
                     content: "OOPS! No Such Host Record Exist to De-Register."
                 })
+            }
+            else {
+                // record 'exists'
+
+                let hashCheckForHost = record.key;
+                console.log("hashCheckForHost", hashCheckForHost)
+
+                bcrypt.compare(req.body.hostKey, hashCheckForHost, function (err, response) {
+                    if (response == true) {
+                        // Keys match
+
+                        // Destroy object
+                        record.destroy().then(() => {
+                            console.log("Host Deregistered Successfully.")
+
+                            res.render('redirect', {
+                                success: true,
+                                content: "Host Deregistered Successfully."
+                            })
+                        })
+
+                    }
+                    else {
+                        // Keys don't match
+
+                        console.log("Key entered does not match")
+
+                        res.render('redirect', {
+                            failure: true,
+                            content: "OOPS! Key entered does not match."
+                        })
+                    }
+
+                });
+
+
             }
         })
 })
