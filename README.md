@@ -20,7 +20,7 @@
 
 ## About
 
-Bifrost is a Node.js based Entry Management Software manage meetings between Hosts and Clients conveniently. This functionalities supported are stated below :
+Bifrost is a Node.js based Entry Management Software to manage meetings between Hosts and Clients conveniently. The functionalities supported are stated below :
 
 * Host Register/ Deregister.
 * Visitor Check-In/ Check-Out.
@@ -48,7 +48,7 @@ npm i
 
 To setup the environment variables you have to create a .env file, add your Gmail and Nexmo Credentials to it in order to facilitate successful Email and SMS transfers respectively, as shown below
 
-![GitHub Logo](/assets/settingUpEnvFile.png)
+![env Setup](/public/settingUpEnvFile.png)
 
 
 
@@ -65,12 +65,32 @@ npm start
 ### <pre>Note : A Nexmo Free Account only supports sending SMS to verified mobile numbers, so the host number must be verified inorder to successfully recieve an SMS.</pre>
 
 
+## Gallery
+
+Snapshots of project.
+
+- Font Page
+![Font Page](public/bifrostHome.png)
+
+- Host Registration Page
+![Host Registration Page](public/host_reg.png)
+
+- Visitor Registration Page
+![Visitor Registration Page](public/visitor_checkin.png)
+
+- Mail sent to Host when a Visitor Checks-in
+![Check-in Mail sent to Host](public/mail_to_host.png)
+
+- SMS sent to Host when a Visitor Checks-in
+![Check-in SMS to Host](public/hostMsg.jpeg)
+
+- Mail sent to Visitor on Checks-out
+![Check-out Mail to Visitor](public/mail_to_visitor.jpeg)
 
 ## Author
 
 👤 **Manav Verma**
 
-* Website: https://vmanav.github.io/
 * Github: [@vmanav](https://github.com/vmanav)
 
 ## 🤝 Contributing

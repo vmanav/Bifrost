@@ -30,7 +30,7 @@ const app = express()
 app.set('view engine', 'hbs')
 app.use('/scripts', express.static(__dirname + '/scripts'))
 
-app.use('/assets', express.static(__dirname + '/assets'))
+app.use('/public', express.static(__dirname + '/public'))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
