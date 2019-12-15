@@ -129,7 +129,7 @@ app.post('/checkIn', function (req, res) {
                                     apiSecret: process.env.NEXMO_API_SECRET,
                                 });
 
-                                let smsText = `Visitor Check-In Details:\n` + mailText;
+                                let smsText = `Visitor Name- ${user.name},Contact Number- ${user.contactNo},Email- ${user.email},Checked-In at ${user.checkInTime.split(",")[0]} on ${user.checkInTime.split(",")[1]}.`;
 
                                 const from = 'Nexmo';
                                 const to = '+91' + hostContactNo;

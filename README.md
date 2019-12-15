@@ -48,7 +48,16 @@ npm i
 
 To setup the environment variables you have to create a .env file, add your Gmail and Nexmo Credentials to it in order to facilitate successful Email and SMS transfers respectively, as shown below
 
-![env Setup](/public/settingUpEnvFile.png)
+```sh
+# nodemailer credetials
+
+NODEMAILER_EMAIL=
+NODEMAILER_PASS=
+
+# nexmo credentials
+NEXMO_API_KEY=
+NEXMO_API_SECRET=
+```
 
 
 
@@ -69,22 +78,22 @@ npm start
 
 Snapshots of project.
 
-- Font Page
-![Font Page](public/bifrostHome.png)
+Home Page
+![Home Page](public/bifrostHome.png)
 
-- Host Registration Page
+Host Registration Page
 ![Host Registration Page](public/host_reg.png)
 
-- Visitor Registration Page
+Visitor Registration Page
 ![Visitor Registration Page](public/visitor_checkin.png)
 
-- Mail sent to Host when a Visitor Checks-in
+Mail sent to Host when a Visitor Checks-in
 ![Check-in Mail sent to Host](public/mail_to_host.png)
 
-- SMS sent to Host when a Visitor Checks-in
+SMS sent to Host when a Visitor Checks-in
 ![Check-in SMS to Host](public/hostMsg.jpeg)
 
-- Mail sent to Visitor on Checks-out
+Mail sent to Visitor on Checks-out
 ![Check-out Mail to Visitor](public/mail_to_visitor.jpeg)
 
 ## Author
@@ -104,6 +113,6 @@ Give a ⭐️ if this project helped you!
 ## 📝 License
 
 Copyright © 2019 [Manav Verma](https://github.com/vmanav).<br />
-This project is [ISC](https://github.com/vmanav/Bifrost/blob/master/LICENSE) licensed.
+This project is [GNU](https://github.com/vmanav/Bifrost/blob/master/LICENSE) licensed.
 
 ***
