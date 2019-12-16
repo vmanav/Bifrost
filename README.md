@@ -17,7 +17,6 @@
 
 ### 🏠 [Homepage](https://github.com/vmanav/Bifrost#readme)
 
-
 ## About
 
 Bifrost is a Node.js based Entry Management Software to manage meetings between Hosts and Clients conveniently. The functionalities supported are stated below :
@@ -27,6 +26,26 @@ Bifrost is a Node.js based Entry Management Software to manage meetings between 
 * Visitor Check-In Details mail and sms to respective host.
 * Visit Details mail to visitor on Check-Out.
 
+## Description of the Problem Statement
+
+We need an application, which can capture the Name, email address, phone no of the visitor and same information also needs to be captured for the host on the front end.
+
+At the back end, once the user enters the information in the form, the backend should store all of the information with time stamp of the entry. This should trigger an email and an SMS to the host informing him of the details of the visitor.
+
+There should also be a provision of the checkout time which the guest can provide once he leaves. This should trigger an email to the guest with the complete form which should include:
+
+1. Name
+1. Phone
+1. Check-in time
+1. Check-out time
+1. Host name
+1. Address visited.
+
+## Intended Workflow
+
+The idea is to develop a minimalistic application without any complex Visitor LogIn/Out mechanism. I have used a combination of _**checkOutTime**_, a CheckOut Timestamp and _**checkedIn**_ flag, a Boolean flag to keep record whether a visitor is checked in or not for the Management of the Login Session of the user.
+
+Also with this logic even when a visitor logs out of the system its entry will not be removed from the database and will serve as a log in the data base.
 
 ## Usage
 
@@ -78,8 +97,8 @@ npm start
 
 Snapshots of project.
 
-Home Page
-![Home Page](public/bifrostHome.png)
+Landing Page
+![Landing Page](public/bifrostHome.png)
 
 Host Registration Page
 ![Host Registration Page](public/host_reg.png)
